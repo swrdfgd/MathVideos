@@ -4,6 +4,7 @@
   <title>Math Videos</title>
 
   <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js' type='text/javascript'></script>
+  <script src="daftarKata.js"></script>
 </head>
 
 <body>
@@ -153,10 +154,12 @@ delete cadang;
 
 
 <script>
+daftarHasilSearch = [];
 banyakTabel = 1;
 //SimpananArray
   
 function buatTabel(){
+
 
 isiVideo = '';
 idVideoTerpilih = [];
@@ -166,6 +169,7 @@ isiVideo += '<tr>';
 for (var k=0; k<3; k++){
 counterVideo ++;
 chanssRanVid = videoIdLists;
+chanssRanVid = chanssRanVid.concat(daftarHasilSearch);
  pilihlinkRandVid = chanssRanVid[Math.floor(Math.random()*chanssRanVid.length)];
 isiVideo += '<td style="vertical-align:top;"><div><iframe id="player" width="345" height="236" src="https://www.youtube.com/embed/' + pilihlinkRandVid + '" frameborder="0" allowfullscreen></iframe><br><span style="font-family:arial;font-size:24px;" id="videoId'+pilihlinkRandVid+counterVideo+'"></span><br><a href ="https://www.youtube.com/watch?v='+pilihlinkRandVid+'" target="_blank"><button class="btn">Watch on YouTube</button></a></div></td>';
 
@@ -196,6 +200,7 @@ if (Math.random() < 1/2){
  
 
 banyakTabel += 1;
+cariVideo();
 }
 
   pilihanWarna1 = getRandomColor();
@@ -205,6 +210,58 @@ banyakTabel += 1;
   
 buatTabel(); cadangkan();
 </script>
+
+    <script>
+		daftarApi = ['AIzaSyBwwv3LrgSG3NcETgahW-3-_DyP74GwViA','AIzaSyB7TX3CfUSUBnWnNP9CGBjLzmfIeo6SpfM'];
+
+        function cariVideo(firstTime = true, nextPageToken = '', keyword = '', apiKey = '') {
+			if (apiKey ==''){apiKey = daftarApi[Math.floor(Math.random()*daftarApi.length)];}
+			if (keyword == ''){
+			keywordTaken = false;
+			while (!keywordTaken){
+				pilihanKeyword = daftarKata[Math.floor(Math.random()*daftarKata.length)];
+				if (pilihanKeyword.split(' ').length > 1){
+					for (let i = 0; i < pilihanKeyword.split(' ').length; i++){
+						if (Math.random() < 1/2){keyword += pilihanKeyword.split(' ')[i] + ' ';}
+					}
+				}
+				else{
+				keyword += pilihanKeyword + ' '
+				}
+				if (Math.random() < 1/2){keywordTaken = true;}
+				if (keyword.length == 0){keywordTaken = false;}
+			}
+			keyword = encodeURIComponent(keyword)
+			}
+			let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=${Math.ceil(Math.random()*50)}&q=${keyword}&key=${apiKey}`;
+			if (nextPageToken !== ''){url += `&pageToken=${nextPageToken}`;}
+			
+			console.log(url);
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+					nextPageToken = data.nextPageToken;
+					if (nextPageToken !== null && Math.random() < 1/50){cariVideo(firstTime, nextPageToken, keyword, apiKey); return}
+                    const videoIds = [];
+                    
+                    data.items.forEach(item => {
+                        if (item.id.kind === 'youtube#video') {
+							daftarHasilSearch.push(item.id.videoId);
+                        }
+                    });
+					
+
+                })
+                .catch(error => {
+					if (firstTime == true){};
+                    console.error('Terjadi kesalahan:', error);
+                });
+        }
+		cariVideo();
+
+ 
+    </script>
+
 
 </body>
 </html>
